@@ -1,0 +1,16 @@
+server {
+	root /srv/xfer;
+
+  listen *:9000;
+	server_name ciber-testbed ciber-testbed.umd.edu;
+
+  location / {
+	  autoindex on;
+		autoindex_format json;
+		index nonexistent-file;
+		sendfile   on;
+		sendfile_max_chunk 1m;
+    tcp_nopush on;
+  }
+
+}

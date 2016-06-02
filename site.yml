@@ -6,11 +6,14 @@
     elasticsearch_max_open_files: 65535
 
   tasks:
+    - apt_repository: repo="deb http://nginx.org/packages/ubuntu/ trusty nginx" state=present
+    - apt_key: url=http://nginx.org/keys/nginx_signing.key state=present
     - name: Install packages
-      apt: name={{ item }} state=present update_cache=yes cache_valid_time=2592000
+      apt: name={{ item }} state=present update_cache=yes
       with_items:
         - nginx
         - git
+        - nfs-common
 
     - name: Configure Testbed Nginx (proxy for tomcat and ciber.umd.edu)
       template: src=templates/nginx-testbed.conf.j2 dest=/etc/nginx/conf.d/testbed.conf
@@ -21,11 +24,22 @@
     - name: Configure Elastic Nginx
       template: src=templates/nginx-elastic.conf.j2 dest=/etc/nginx/conf.d/elastic.conf
 
+    - name: Configure Indigo Nginx
+      template: src=templates/nginx-indigo.conf.j2 dest=/etc/nginx/conf.d/indigo.conf
+
     - name: Configure Nginx Passwords
       template: src=templates/passwords.j2 dest=/etc/nginx/passwords
 
     - name: Clone Elasticsearch Head
       git: repo=https://github.com/mobz/elasticsearch-head.git dest=/opt/eshead
+
+    - name: Mount CIBER XFER directory
+      lineinfile: dest=/etc/fstab line="192.168.0.4:/export/data/xfer	/srv/xfer	nfs	_netdev,ro	0	0"
+    - file: path=/srv/xfer state=directory
+    - mount: name=/srv/xfer src=192.168.0.4:/export/data/xfer fstype=nfs state=mounted
+
+    - name: Configure CIBER FTP-over-HTTP
+      template: src=templates/nginx-ftphttp.conf.j2 dest=/etc/nginx/conf.d/ftphttp.conf
 
     - name: Start services
       service: name={{ item }} enabled=yes state=restarted
