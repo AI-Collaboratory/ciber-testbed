@@ -15,6 +15,9 @@
         - git
         - nfs-common
 
+    - name: Kibana
+      include: kibana.yml
+
     - name: Configure Testbed Nginx (proxy for tomcat and ciber.umd.edu)
       template: src=templates/nginx-testbed.conf.j2 dest=/etc/nginx/conf.d/testbed.conf
 
@@ -23,6 +26,9 @@
 
     - name: Configure Elastic Nginx
       template: src=templates/nginx-elastic.conf.j2 dest=/etc/nginx/conf.d/elastic.conf
+
+    - name: Configure Celery Flower
+      template: src=templates/nginx-flower.conf.j2 dest=/etc/nginx/conf.d/flower.conf
 
     - name: Configure Indigo Nginx
       template: src=templates/nginx-indigo.conf.j2 dest=/etc/nginx/conf.d/indigo.conf
@@ -34,9 +40,9 @@
       git: repo=https://github.com/mobz/elasticsearch-head.git dest=/opt/eshead
 
     - name: Mount CIBER XFER directory
-      lineinfile: dest=/etc/fstab line="192.168.0.4:/export/data/xfer	/srv/xfer	nfs	_netdev,ro	0	0"
-    - file: path=/srv/xfer state=directory
-    - mount: name=/srv/xfer src=192.168.0.4:/export/data/xfer fstype=nfs state=mounted
+      lineinfile: dest=/etc/fstab line="192.168.0.4:/export/ciber	/srv/ciber	nfs	_netdev,ro	0	0"
+    - file: path=/srv/ciber state=directory
+    - mount: name=/srv/ciber src=192.168.0.4:/export/ciber fstype=nfs state=mounted
 
     - name: Configure CIBER FTP-over-HTTP
       template: src=templates/nginx-ftphttp.conf.j2 dest=/etc/nginx/conf.d/ftphttp.conf
